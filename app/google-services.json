@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "28800877982",
+    "project_id": "locatiosharingappjpc",
+    "storage_bucket": "locatiosharingappjpc.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:28800877982:android:d2bb2caddadabacd11828f",
+        "android_client_info": {
+          "package_name": "org.freedu.locatiosharingappjpc"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBI0Jfs0oZtmHLPXWjJ9IeLy8X5CgiV3cw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
