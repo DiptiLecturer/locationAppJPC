@@ -26,7 +26,7 @@ import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -54,8 +54,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import org.freedu.locatiosharingappjpc.ui.viewModel.AuthViewModel
 
 
@@ -192,16 +190,9 @@ fun LoginScreen(
         Button(
             onClick = {
                 if (validateLoginInputs(email, password, context)) {
-
-                    scope.launch {
-                        delay(1500) // Simulate network call
-
-                        if (email == "test@example.com" && password == "123456") {
-                            onLoginSuccess()
-                        } else {
-                            Toast.makeText(context, "Invalid credentials", Toast.LENGTH_SHORT)
-                                .show()
-                        }
+                    viewModel.login(email, password) { success, message ->
+                        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                        if (success) onLoginSuccess()
                     }
                 }
             },
@@ -231,7 +222,7 @@ fun LoginScreen(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Divider(
+            HorizontalDivider(
                 modifier = Modifier.weight(1f),
                 thickness = 1.dp,
                 color = MaterialTheme.colorScheme.outline
@@ -241,7 +232,7 @@ fun LoginScreen(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(horizontal = 8.dp)
             )
-            Divider(
+            HorizontalDivider(
                 modifier = Modifier.weight(1f),
                 thickness = 1.dp,
                 color = MaterialTheme.colorScheme.outline
@@ -251,10 +242,9 @@ fun LoginScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         // Sign in with Google Button
-// Sign in with Google Button
         OutlinedButton(
             onClick = {
-                Toast.makeText(context, "Google Sign In", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Google Sign In coming soon!", Toast.LENGTH_SHORT).show()
             },
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp),
@@ -290,7 +280,7 @@ fun LoginScreen(
         ) {
             Text(
                 text = "Don't have an account? ",
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = Color.White,
             )
             Text(
                 text = "Sign Up",

@@ -2,8 +2,10 @@ package org.freedu.locatiosharingappjpc.ui.presentation
 
 import android.content.Context
 import android.widget.Toast
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -13,6 +15,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -40,9 +43,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -51,9 +54,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import org.freedu.locatiosharingappjpc.R
 import org.freedu.locatiosharingappjpc.ui.viewModel.AuthViewModel
 
 @Preview(showSystemUi = true)
@@ -78,6 +78,7 @@ fun SignUpScreen(
         modifier = Modifier
             .fillMaxSize()
             .padding(24.dp),
+
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
@@ -216,14 +217,9 @@ fun SignUpScreen(
         Button(
             onClick = {
                 if (validateInputs(email, password, confirmPassword, context)) {
-
-                    scope.launch {
-                        delay(1500) // Simulate network call
-
-                        // Handle sign up logic here
-                        Toast.makeText(context, "Account created successfully!", Toast.LENGTH_SHORT)
-                            .show()
-                        onSignUpSuccess()
+                    viewModel.signUp(email, password, confirmPassword) { success, message ->
+                        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                        if (success) onSignUpSuccess()
                     }
                 }
             },
@@ -283,12 +279,21 @@ fun SignUpScreen(
                 contentColor = MaterialTheme.colorScheme.primary
             )
         ) {
-            // Google Logo - replace with your actual drawable
-            Icon(
-                painter = painterResource(id = R.drawable.ic_google_logo),
-                contentDescription = "Google Logo",
-                modifier = Modifier.size(24.dp)
-            )
+            // Simple "G" in a circle instead of Google logo
+            Box(
+                modifier = Modifier
+                    .size(24.dp)
+                    .clip(CircleShape)
+                    .background(Color(0xFF4285F4)),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "G",
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.sp
+                )
+            }
             Spacer(modifier = Modifier.width(12.dp))
             Text("Sign in with Google", fontSize = 16.sp)
         }
@@ -302,7 +307,9 @@ fun SignUpScreen(
         ) {
             Text(
                 text = "Already have an account? ",
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = Color.White,
+                fontSize = 14.sp,
+                modifier = Modifier.padding(end = 8.dp)
             )
             Text(
                 text = "Sign In",
