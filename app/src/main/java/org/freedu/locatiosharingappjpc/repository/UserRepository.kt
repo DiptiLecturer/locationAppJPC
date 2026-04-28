@@ -4,6 +4,9 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
 import org.freedu.locatiosharingappjpc.model.AppUsers
 
@@ -171,5 +174,19 @@ class UserRepository {
         } catch (e: Exception) {
             Result.failure(e)
         }
+    }
+
+    // In UserRepository.kt
+    fun listenToFriendsLocation(): Flow<List<AppUsers>> = callbackFlow {
+        val subscription = firestore.collection("AppUsers")
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    close(error)
+                    return@addSnapshotListener
+                }
+                val users = snapshot?.documents?.mapNotNull { it.toObject(AppUsers::class.java) } ?: emptyList()
+                trySend(users)
+            }
+        awaitClose { subscription.remove() }
     }
 }

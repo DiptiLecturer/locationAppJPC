@@ -3,7 +3,11 @@ package org.freedu.locatiosharingappjpc.ui.presentation
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
@@ -13,32 +17,45 @@ import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 
 import org.freedu.locatiosharingappjpc.model.AppUsers
+import org.freedu.locatiosharingappjpc.ui.viewModel.FriendListViewModel
+import org.freedu.locatiosharingappjpc.ui.viewModel.MapViewModel
 
 @Composable
-fun MapScreen(users: List<AppUsers>) {
-    // 1. Define the starting view (Center on the first user found)
-    val firstUserLocation = users.firstOrNull { it.latitude != null }?.let {
-        LatLng(it.latitude!!, it.longitude!!)
-    } ?: LatLng(0.0, 0.0)
+fun MapScreen(
+    lat: Double? = null,
+    lng: Double? = null,
+    showAll: Boolean = false,
+    viewModel: FriendListViewModel
+) {
+    val friends by viewModel.friends.collectAsState()
+    val currentUser by viewModel.currentUser.collectAsState()
 
     val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(firstUserLocation, 12f)
+        position = CameraPosition.fromLatLngZoom(LatLng(lat ?: 0.0, lng ?: 0.0), 15f)
     }
 
-    // 2. Render the Map
     GoogleMap(
         modifier = Modifier.fillMaxSize(),
         cameraPositionState = cameraPositionState
     ) {
-        // 3. Add Markers for every user in the list
-        users.forEach { user ->
-            if (user.latitude != null && user.longitude != null) {
+        if (showAll) {
+            val allUsers = friends + listOfNotNull(currentUser)
+            allUsers.forEach { user ->
+                val pos = LatLng(user.latitude ?: 0.0, user.longitude ?: 0.0)
                 Marker(
-                    state = MarkerState(position = LatLng(user.latitude, user.longitude)),
-                    title = user.username,
-                    snippet = "Last seen here"
+                    state = MarkerState(position = pos),
+                    // Show username if exists, otherwise show email
+                    title = user.username.ifEmpty { user.email }
                 )
             }
+        } else {
+            // Single User Marker
+            lat?.let { l -> lng?.let { g ->
+                Marker(
+                    state = MarkerState(position = LatLng(l, g)),
+                    title = "Selected Location"
+                )
+            }}
         }
     }
 }

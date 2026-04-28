@@ -364,5 +364,3 @@ private fun validateInputs(
     }
 }
 
-// Add this to your resources (res/drawable/ic_google_logo.xml) for the Google logo:
-// You can also use a PNG or Vector Asset from Material Icons or download from Google

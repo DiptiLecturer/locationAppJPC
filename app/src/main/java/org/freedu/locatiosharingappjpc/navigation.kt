@@ -1,38 +1,39 @@
 package org.freedu.locatiosharingappjpc
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
+import org.freedu.locatiosharingappjpc.repository.UserRepository
+import org.freedu.locatiosharingappjpc.ui.presentation.FriendListScreen
 import org.freedu.locatiosharingappjpc.ui.presentation.LoginScreen
+import org.freedu.locatiosharingappjpc.ui.presentation.MapScreen
 import org.freedu.locatiosharingappjpc.ui.presentation.SignUpScreen
 import org.freedu.locatiosharingappjpc.ui.presentation.SplashScreen
 import org.freedu.locatiosharingappjpc.ui.viewModel.AuthState
 import org.freedu.locatiosharingappjpc.ui.viewModel.AuthViewModel
+import org.freedu.locatiosharingappjpc.ui.viewModel.FriendListViewModel
 
 sealed class Screen(val route: String) {
     object Splash : Screen("splash")
     object Login : Screen("login")
     object SignUp : Screen("signup")
-    object Home : Screen("home")
-    object Map : Screen("map")
+    object FriendList : Screen("friendList")
     object Profile : Screen("profile")
+
+    object MapAll : Screen("map_all")
+    object MapSingle : Screen("map_single/{lat}/{lng}") {
+        fun createRoute(lat: Double, lng: Double) = "map_single/$lat/$lng"
+    }
 }
 
 @Composable
@@ -41,6 +42,12 @@ fun AppNavigation(
 ) {
     val navController = rememberNavController()
     val authState by authViewModel.authState.collectAsState()
+    val context = LocalContext.current
+
+    // Initialize Location Client
+    val fusedLocationClient = remember {
+        LocationServices.getFusedLocationProviderClient(context)
+    }
 
     NavHost(
         navController = navController,
@@ -49,17 +56,13 @@ fun AppNavigation(
         composable(Screen.Splash.route) {
             SplashScreen(
                 onTimeout = {
-                    when (authState) {
-                        is AuthState.Authenticated -> {
-                            navController.navigate(Screen.Home.route) {
-                                popUpTo(Screen.Splash.route) { inclusive = true }
-                            }
+                    if (authState is AuthState.Authenticated) {
+                        navController.navigate(Screen.FriendList.route) {
+                            popUpTo(Screen.Splash.route) { inclusive = true }
                         }
-
-                        else -> {
-                            navController.navigate(Screen.Login.route) {
-                                popUpTo(Screen.Splash.route) { inclusive = true }
-                            }
+                    } else {
+                        navController.navigate(Screen.Login.route) {
+                            popUpTo(Screen.Splash.route) { inclusive = true }
                         }
                     }
                 }
@@ -68,11 +71,9 @@ fun AppNavigation(
 
         composable(Screen.Login.route) {
             LoginScreen(
-                onNavigateToSignUp = {
-                    navController.navigate(Screen.SignUp.route)
-                },
+                onNavigateToSignUp = { navController.navigate(Screen.SignUp.route) },
                 onLoginSuccess = {
-                    navController.navigate(Screen.Home.route) {
+                    navController.navigate(Screen.FriendList.route) {
                         popUpTo(Screen.Login.route) { inclusive = true }
                     }
                 },
@@ -88,7 +89,7 @@ fun AppNavigation(
                     }
                 },
                 onSignUpSuccess = {
-                    navController.navigate(Screen.Home.route) {
+                    navController.navigate(Screen.FriendList.route) {
                         popUpTo(Screen.SignUp.route) { inclusive = true }
                     }
                 },
@@ -96,84 +97,49 @@ fun AppNavigation(
             )
         }
 
-        composable(Screen.Home.route) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                Text(
-                    text = "Home Screen",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                Button(
-                    onClick = {
-                        navController.navigate(Screen.Map.route)
+        // --- ONLY ONE FRIENDLIST COMPOSABLE ---
+        composable(Screen.FriendList.route) {
+            val viewModel: FriendListViewModel = viewModel(
+                factory = FriendListViewModelFactory(UserRepository(), fusedLocationClient)
+            )
+
+            FriendListScreen(
+                viewModel = viewModel,
+                navController = navController,
+                onLogout = {
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(Screen.FriendList.route) { inclusive = true }
                     }
-                ) {
-                    Text("Go to Map")
                 }
-                Spacer(modifier = Modifier.height(8.dp))
-                Button(
-                    onClick = {
-                        navController.navigate(Screen.Profile.route)
-                    }
-                ) {
-                    Text("Go to Profile")
-                }
-            }
+            )
         }
 
-        composable(Screen.Map.route) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                Text(
-                    text = "Map Screen",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = "Map functionality will be implemented here",
-                    fontSize = 16.sp
-                )
-            }
+        // --- MAP ROUTES (Sharing the same logic) ---
+        composable(Screen.MapSingle.route) { backStackEntry ->
+            // Use getString because arguments in routes are strings by default
+            val lat = backStackEntry.arguments?.getString("lat")?.toDoubleOrNull() ?: 0.0
+            val lng = backStackEntry.arguments?.getString("lng")?.toDoubleOrNull() ?: 0.0
+
+            val viewModel: FriendListViewModel = viewModel(
+                factory = FriendListViewModelFactory(UserRepository(), fusedLocationClient)
+            )
+            MapScreen(lat = lat, lng = lng, showAll = false, viewModel = viewModel)
         }
 
-        composable(Screen.Profile.route) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                Text(
-                    text = "Profile Screen",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                Button(
-                    onClick = {
-                        authViewModel.logout()
-                        navController.navigate(Screen.Login.route) {
-                            popUpTo(Screen.Home.route) { inclusive = true }
-                        }
-                    }
-                ) {
-                    Text("Logout")
-                }
-            }
+        composable(Screen.MapAll.route) {
+            val viewModel: FriendListViewModel = viewModel(
+                factory = FriendListViewModelFactory(UserRepository(), fusedLocationClient)
+            )
+            MapScreen(showAll = true, viewModel = viewModel)
         }
+    }
+}
+
+class FriendListViewModelFactory(
+    private val repository: UserRepository,
+    private val fusedLocationClient: FusedLocationProviderClient
+) : ViewModelProvider.Factory {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        return FriendListViewModel(repository, fusedLocationClient) as T
     }
 }

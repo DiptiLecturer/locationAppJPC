@@ -1,9 +1,228 @@
 package org.freedu.locatiosharingappjpc.ui.presentation
 
+import android.Manifest
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.SmallFloatingActionButton
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import org.freedu.locatiosharingappjpc.Screen
+import org.freedu.locatiosharingappjpc.model.AppUsers
+import org.freedu.locatiosharingappjpc.ui.viewModel.FriendListViewModel
 
+@Composable
+fun FriendListScreen(
+    viewModel: FriendListViewModel,
+    navController: NavController,
+    onLogout: () -> Unit
+) {
+    val context = LocalContext.current
+    val currentUser by viewModel.currentUser.collectAsState()
+    val friends by viewModel.friends.collectAsState()
+    var isMenuExpanded by remember { mutableStateOf(false) }
 
+    // Permission Launcher
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        if (permissions.values.all { it }) {
+            viewModel.startLocationUpdates()
+        } else {
+            Toast.makeText(context, "Location permission denied", Toast.LENGTH_SHORT).show()
+        }
+    }
 
+    LaunchedEffect(Unit) {
+        permissionLauncher.launch(
+            arrayOf(
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            )
+        )
+    }
 
+    Box(
+        modifier = Modifier.fillMaxSize()
+            .systemBarsPadding()
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color(0xFFE8F5E9))
+                .padding(horizontal = 16.dp)
+        ) {
+            Spacer(modifier = Modifier.height(40.dp))
+
+            // My Profile Card
+            currentUser?.let { user ->
+                UserCard(
+                    user = user,
+                    title = "My Profile",
+                    containerColor = Color(0xFF4CAF50),
+                    onClick = {
+                        navController.navigate(
+                            Screen.MapSingle.createRoute(
+                                user.latitude ?: 0.0,
+                                user.longitude ?: 0.0
+                            )
+                        )
+                    }
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                "Friend List",
+                fontWeight = FontWeight.Bold,
+                fontSize = 20.sp,
+                color = Color(0xFF2E7D32)
+            )
+
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                contentPadding = PaddingValues(bottom = 100.dp)
+            ) {
+                items(friends) { friend ->
+                    UserCard(
+                        user = friend,
+                        containerColor = Color.White,
+                        contentColor = Color.Black,
+                        onClick = {
+                            // Move to MapSingle for this friend
+                            navController.navigate(
+                                Screen.MapSingle.createRoute(
+                                    friend.latitude ?: 0.0, friend.longitude ?: 0.0
+                                )
+                            )
+                        }
+                    )
+                }
+            }
+        }
+
+        // FAB Menu
+        Column(
+            modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp)
+                .navigationBarsPadding(),
+            horizontalAlignment = Alignment.End,
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            if (isMenuExpanded) {
+                SmallFloatingActionButton(onClick = {}, containerColor = Color(0xFF4CAF50)) {
+                    Icon(Icons.Default.Person, contentDescription = null, tint = Color.White)
+                }
+                SmallFloatingActionButton(
+                    onClick = { navController.navigate(Screen.MapAll.route) },
+                    containerColor = Color(0xFF4CAF50)
+                ) {
+                    Icon(Icons.Default.LocationOn, contentDescription = null, tint = Color.White)
+                }
+                SmallFloatingActionButton(
+                    onClick = { viewModel.logout(); onLogout() },
+                    containerColor = Color.Red
+                ) {
+                    Icon(
+                        Icons.AutoMirrored.Filled.ExitToApp,
+                        contentDescription = null,
+                        tint = Color.White
+                    )
+                }
+            }
+            FloatingActionButton(
+                onClick = { isMenuExpanded = !isMenuExpanded },
+                containerColor = Color(0xFF2E7D32),
+                contentColor = Color.White
+            ) {
+                Icon(
+                    if (isMenuExpanded) Icons.Default.Close else Icons.Default.Menu,
+                    contentDescription = null
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun UserCard(
+    user: AppUsers,
+    title: String? = null,
+    containerColor: Color,
+    contentColor: Color = Color.White,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth()
+            .clickable { onClick() },
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = containerColor),
+        elevation = CardDefaults.cardElevation(4.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            if (title != null) {
+                Text(
+                    title,
+                    fontWeight = FontWeight.Bold,
+                    color = contentColor,
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                )
+            }
+            Text(user.username, fontWeight = FontWeight.Bold, color = contentColor)
+            Text(user.email, fontSize = 12.sp, color = contentColor.copy(alpha = 0.8f))
+            Row(
+                modifier = Modifier.padding(top = 8.dp).fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                val lat = user.latitude?.let { String.format("%.4f", it) } ?: "N/A"
+                val lng = user.longitude?.let { String.format("%.4f", it) } ?: "N/A"
+                Text("Lat: $lat", fontSize = 13.sp, color = contentColor)
+                Text("Lng: $lng", fontSize = 13.sp, color = contentColor)
+            }
+        }
+    }
+}
 
 
 
