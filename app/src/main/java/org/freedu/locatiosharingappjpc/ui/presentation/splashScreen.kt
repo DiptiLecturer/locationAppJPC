@@ -29,6 +29,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
+import org.freedu.locatiosharingappjpc.ui.theme.GreenPrimary
+import org.freedu.locatiosharingappjpc.ui.theme.White
 
 @Composable
 fun SplashScreen(
@@ -52,7 +54,7 @@ fun SplashScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.primary),
+            .background(GreenPrimary), // Changed from MaterialTheme.colorScheme.primary
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -65,7 +67,7 @@ fun SplashScreen(
                     .size(120.dp)
                     .scale(scale)
                     .clip(CircleShape)
-                    .background(Color.White),
+                    .background(White), // Changed from Color.White
                 contentAlignment = Alignment.Center
             ) {
                 Text(
@@ -80,7 +82,7 @@ fun SplashScreen(
                 text = "Location Sharing App",
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.White
+                color = White // Changed from Color.White
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -88,7 +90,7 @@ fun SplashScreen(
             Text(
                 text = "Share your location with loved ones",
                 fontSize = 14.sp,
-                color = Color.White.copy(alpha = 0.8f)
+                color = White.copy(alpha = 0.8f) // Changed from Color.White
             )
         }
     }

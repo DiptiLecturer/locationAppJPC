@@ -51,6 +51,12 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import org.freedu.locatiosharingappjpc.Screen
 import org.freedu.locatiosharingappjpc.model.AppUsers
+import org.freedu.locatiosharingappjpc.ui.theme.GreenError
+import org.freedu.locatiosharingappjpc.ui.theme.GreenLight
+import org.freedu.locatiosharingappjpc.ui.theme.GreenPrimary
+import org.freedu.locatiosharingappjpc.ui.theme.GreenPrimaryLight
+import org.freedu.locatiosharingappjpc.ui.theme.TextDark
+import org.freedu.locatiosharingappjpc.ui.theme.White
 import org.freedu.locatiosharingappjpc.ui.viewModel.FriendListViewModel
 
 @Composable
@@ -75,7 +81,6 @@ fun FriendListScreen(
         }
     }
 
-
     LaunchedEffect(Unit) {
         permissionLauncher.launch(
             arrayOf(
@@ -92,7 +97,7 @@ fun FriendListScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(0xFFE8F5E9))
+                .background(GreenLight) // Changed from Color(0xFFE8F5E9) to GreenLight
                 .padding(horizontal = 16.dp)
         ) {
             Spacer(modifier = Modifier.height(40.dp))
@@ -102,7 +107,7 @@ fun FriendListScreen(
                 UserCard(
                     user = user,
                     title = "My Profile",
-                    containerColor = Color(0xFF4CAF50),
+                    containerColor = GreenPrimaryLight, // Changed from Color(0xFF4CAF50) to GreenPrimaryLight
                     onClick = {
                         val lat = user.latitude
                         val lng = user.longitude
@@ -126,7 +131,7 @@ fun FriendListScreen(
                 "Friend List",
                 fontWeight = FontWeight.Bold,
                 fontSize = 20.sp,
-                color = Color(0xFF2E7D32)
+                color = GreenPrimary // Changed from Color(0xFF2E7D32) to GreenPrimary
             )
 
             LazyColumn(
@@ -137,8 +142,8 @@ fun FriendListScreen(
                 items(friends) { friend ->
                     UserCard(
                         user = friend,
-                        containerColor = Color.White,
-                        contentColor = Color.Black,
+                        containerColor = White, // Changed from Color.White to White
+                        contentColor = TextDark, // Changed from Color.Black to TextDark
                         onClick = {
                             val lat = friend.latitude
                             val lng = friend.longitude
@@ -166,31 +171,31 @@ fun FriendListScreen(
                 // Inside FriendListScreen FAB Column
                 SmallFloatingActionButton(
                     onClick = { navController.navigate(Screen.Profile.route) }, // Go to Profile
-                    containerColor = Color(0xFF4CAF50)
+                    containerColor = GreenPrimaryLight // Changed from Color(0xFF4CAF50) to GreenPrimaryLight
                 ) {
-                    Icon(Icons.Default.Person, contentDescription = null, tint = Color.White)
+                    Icon(Icons.Default.Person, contentDescription = null, tint = White) // Changed to White
                 }
                 SmallFloatingActionButton(
                     onClick = { navController.navigate(Screen.MapAll.route) },
-                    containerColor = Color(0xFF4CAF50)
+                    containerColor = GreenPrimaryLight // Changed from Color(0xFF4CAF50) to GreenPrimaryLight
                 ) {
-                    Icon(Icons.Default.LocationOn, contentDescription = null, tint = Color.White)
+                    Icon(Icons.Default.LocationOn, contentDescription = null, tint = White) // Changed to White
                 }
                 SmallFloatingActionButton(
                     onClick = { viewModel.logout(); onLogout() },
-                    containerColor = Color.Red
+                    containerColor = GreenError // Changed from Color.Red to GreenError
                 ) {
                     Icon(
                         Icons.AutoMirrored.Filled.ExitToApp,
                         contentDescription = null,
-                        tint = Color.White
+                        tint = White // Changed to White
                     )
                 }
             }
             FloatingActionButton(
                 onClick = { isMenuExpanded = !isMenuExpanded },
-                containerColor = Color(0xFF2E7D32),
-                contentColor = Color.White
+                containerColor = GreenPrimary, // Changed from Color(0xFF2E7D32) to GreenPrimary
+                contentColor = White // Changed from Color.White to White
             ) {
                 Icon(
                     if (isMenuExpanded) Icons.Default.Close else Icons.Default.Menu,
@@ -206,7 +211,7 @@ fun UserCard(
     user: AppUsers,
     title: String? = null,
     containerColor: Color,
-    contentColor: Color = Color.White,
+    contentColor: Color = White, // Changed default from Color.White to White
     onClick: () -> Unit
 ) {
     Card(

@@ -8,6 +8,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
@@ -38,7 +39,6 @@ fun MapScreen(
     GoogleMap(
         modifier = Modifier.fillMaxSize(),
         cameraPositionState = cameraPositionState,
-        // FIX: This pushes the zoom buttons and Google logo up from the bottom nav bar
         contentPadding = PaddingValues(bottom = 80.dp)
     ) {
         if (showAll) {
@@ -54,12 +54,17 @@ fun MapScreen(
 
                 Marker(
                     state = markerState,
-                    title = userItem.username.ifEmpty { userItem.email }
+                    title = userItem.username.ifEmpty { userItem.email },
+                    // CHANGED: used .userId instead of .id
+                    icon = BitmapDescriptorFactory.defaultMarker(
+                        if (userItem.userId == currentUser?.userId)
+                            BitmapDescriptorFactory.HUE_GREEN
+                        else
+                            BitmapDescriptorFactory.HUE_BLUE
+                    )
                 )
             }
         } else if (isSingleLocValid) {
-            // FIX: Find the specific user from the data to get their name/email
-            // If it's a single location, we check if it belongs to a friend or the current user
             val targetUser = (friends + listOfNotNull(currentUser)).find {
                 it.latitude == lat && it.longitude == lng
             }
@@ -68,8 +73,14 @@ fun MapScreen(
 
             Marker(
                 state = singleMarkerState,
-                // If we found the user in our list, show their name, else show a default
-                title = targetUser?.let { it.username.ifEmpty { it.email } } ?: "Selected Location"
+                title = targetUser?.let { it.username.ifEmpty { it.email } } ?: "Selected Location",
+                // CHANGED: used .userId instead of .id
+                icon = BitmapDescriptorFactory.defaultMarker(
+                    if (targetUser?.userId == currentUser?.userId)
+                        BitmapDescriptorFactory.HUE_GREEN
+                    else
+                        BitmapDescriptorFactory.HUE_BLUE
+                )
             )
         }
     }

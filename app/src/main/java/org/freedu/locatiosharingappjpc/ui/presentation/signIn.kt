@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -54,6 +55,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import org.freedu.locatiosharingappjpc.ui.theme.GreenError
+import org.freedu.locatiosharingappjpc.ui.theme.GreenPrimary
+import org.freedu.locatiosharingappjpc.ui.theme.TextDark
+import org.freedu.locatiosharingappjpc.ui.theme.White
 import org.freedu.locatiosharingappjpc.ui.viewModel.AuthViewModel
 
 
@@ -71,12 +76,13 @@ fun LoginScreen(
     val isLoading by viewModel.isLoading.collectAsState()
 
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(24.dp),
+            .systemBarsPadding()
+            .background(White)
+            .padding(horizontal = 16.dp), // Centralized horizontal padding
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
@@ -85,14 +91,14 @@ fun LoginScreen(
             text = "Welcome Back",
             fontSize = 32.sp,
             fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.primary, // GreenPrimary
+            color = GreenPrimary,
             modifier = Modifier.padding(bottom = 8.dp)
         )
 
         Text(
             text = "Sign in to continue",
             fontSize = 16.sp,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            color = TextDark,
             modifier = Modifier.padding(bottom = 32.dp)
         )
 
@@ -104,18 +110,18 @@ fun LoginScreen(
             placeholder = { Text("Enter your email") },
             singleLine = true,
             shape = RoundedCornerShape(12.dp),
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(), // No individual padding needed
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                focusedLabelColor = MaterialTheme.colorScheme.primary,
-                cursorColor = MaterialTheme.colorScheme.primary
+                focusedBorderColor = GreenPrimary,
+                unfocusedBorderColor = TextDark.copy(alpha = 0.3f),
+                focusedLabelColor = GreenPrimary,
+                cursorColor = GreenPrimary
             ),
             leadingIcon = {
                 Icon(
                     Icons.Default.Email,
                     contentDescription = "Email Icon",
-                    tint = MaterialTheme.colorScheme.primary
+                    tint = GreenPrimary
                 )
             },
             isError = email.isNotEmpty() && !android.util.Patterns.EMAIL_ADDRESS.matcher(email)
@@ -124,7 +130,7 @@ fun LoginScreen(
                 if (email.isNotEmpty() && !android.util.Patterns.EMAIL_ADDRESS.matcher(email)
                         .matches()
                 ) {
-                    Text("Invalid email address")
+                    Text("Invalid email address", color = GreenError)
                 }
             }
         )
@@ -139,12 +145,12 @@ fun LoginScreen(
             placeholder = { Text("Enter your password") },
             singleLine = true,
             shape = RoundedCornerShape(12.dp),
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(), // No individual padding needed
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                focusedLabelColor = MaterialTheme.colorScheme.primary,
-                cursorColor = MaterialTheme.colorScheme.primary
+                focusedBorderColor = GreenPrimary,
+                unfocusedBorderColor = TextDark.copy(alpha = 0.3f),
+                focusedLabelColor = GreenPrimary,
+                cursorColor = GreenPrimary
             ),
             visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -152,7 +158,7 @@ fun LoginScreen(
                 Icon(
                     Icons.Default.Lock,
                     contentDescription = "Password Icon",
-                    tint = MaterialTheme.colorScheme.primary
+                    tint = GreenPrimary
                 )
             },
             trailingIcon = {
@@ -160,7 +166,7 @@ fun LoginScreen(
                     Icon(
                         if (passwordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
                         contentDescription = if (passwordVisible) "Hide password" else "Show password",
-                        tint = MaterialTheme.colorScheme.primary
+                        tint = GreenPrimary
                     )
                 }
             }
@@ -175,7 +181,7 @@ fun LoginScreen(
         ) {
             Text(
                 text = "Forgot Password?",
-                color = MaterialTheme.colorScheme.primary,
+                color = GreenPrimary,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium,
                 modifier = Modifier.clickable {
@@ -196,18 +202,18 @@ fun LoginScreen(
                     }
                 }
             },
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(), // No individual padding needed
             shape = RoundedCornerShape(12.dp),
             enabled = !isLoading,
             colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.primary, // GreenPrimary
-                contentColor = MaterialTheme.colorScheme.onPrimary // White
+                containerColor = GreenPrimary,
+                contentColor = White
             )
         ) {
             if (isLoading) {
                 CircularProgressIndicator(
                     modifier = Modifier.size(24.dp),
-                    color = Color.White,
+                    color = White,
                     strokeWidth = 2.dp
                 )
             } else {
@@ -225,17 +231,17 @@ fun LoginScreen(
             HorizontalDivider(
                 modifier = Modifier.weight(1f),
                 thickness = 1.dp,
-                color = MaterialTheme.colorScheme.outline
+                color = TextDark.copy(alpha = 0.3f)
             )
             Text(
                 text = " OR ",
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color = TextDark,
                 modifier = Modifier.padding(horizontal = 8.dp)
             )
             HorizontalDivider(
                 modifier = Modifier.weight(1f),
                 thickness = 1.dp,
-                color = MaterialTheme.colorScheme.outline
+                color = TextDark.copy(alpha = 0.3f)
             )
         }
 
@@ -246,29 +252,36 @@ fun LoginScreen(
             onClick = {
                 Toast.makeText(context, "Google Sign In coming soon!", Toast.LENGTH_SHORT).show()
             },
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(), // No individual padding needed
             shape = RoundedCornerShape(12.dp),
             colors = ButtonDefaults.outlinedButtonColors(
-                contentColor = MaterialTheme.colorScheme.primary
+                contentColor = GreenPrimary
+            ),
+            border = ButtonDefaults.outlinedButtonBorder.copy(
+                brush = androidx.compose.ui.graphics.SolidColor(GreenPrimary)
             )
         ) {
-            // Simple "G" in a circle instead of Google logo
-            Box(
-                modifier = Modifier
-                    .size(24.dp)
-                    .clip(CircleShape)
-                    .background(Color(0xFF4285F4)),
-                contentAlignment = Alignment.Center
+            Row(
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = "G",
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 14.sp
-                )
+                Box(
+                    modifier = Modifier
+                        .size(24.dp)
+                        .clip(CircleShape)
+                        .background(GreenPrimary),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "G",
+                        color = White,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 14.sp
+                    )
+                }
+                Spacer(modifier = Modifier.width(12.dp))
+                Text("Sign in with Google", fontSize = 16.sp)
             }
-            Spacer(modifier = Modifier.width(12.dp))
-            Text("Sign in with Google", fontSize = 16.sp)
         }
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -280,11 +293,11 @@ fun LoginScreen(
         ) {
             Text(
                 text = "Don't have an account? ",
-                color = Color.White,
+                color = TextDark,
             )
             Text(
                 text = "Sign Up",
-                color = MaterialTheme.colorScheme.primary,
+                color = GreenPrimary,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.clickable { onNavigateToSignUp() }
             )

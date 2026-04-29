@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
@@ -19,6 +20,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -36,6 +38,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import org.freedu.locatiosharingappjpc.ui.theme.GreenPrimary
+import org.freedu.locatiosharingappjpc.ui.theme.TextDark
+import org.freedu.locatiosharingappjpc.ui.theme.White
 import org.freedu.locatiosharingappjpc.ui.viewModel.FriendListViewModel
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -45,17 +50,14 @@ fun ProfileScreen(
     onBack: () -> Unit
 ) {
     val currentUser by viewModel.currentUser.collectAsState()
-
-    // 1. Initialize with current value if available, otherwise empty
     var newName by remember { mutableStateOf(currentUser?.username ?: "") }
 
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
-    // 2. SYNC LOGIC: If currentUser changes (e.g., loads from Firebase), update the text field
     LaunchedEffect(currentUser) {
         currentUser?.let {
-            if (newName.isEmpty()) { // Only update if the user hasn't typed anything yet
+            if (newName.isEmpty()) {
                 newName = it.username
             }
         }
@@ -64,8 +66,9 @@ fun ProfileScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
-            .padding(24.dp),
+            .systemBarsPadding()
+            .background(White) // Changed from Color.White
+            .padding(horizontal = 24.dp), // Changed from padding(24.dp) to horizontal only
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
@@ -73,7 +76,7 @@ fun ProfileScreen(
             imageVector = Icons.Default.Person,
             contentDescription = null,
             modifier = Modifier.size(80.dp),
-            tint = Color(0xFF2E7D32)
+            tint = GreenPrimary // Changed from Color(0xFF2E7D32)
         )
 
         Text(
@@ -81,7 +84,7 @@ fun ProfileScreen(
             style = androidx.compose.ui.text.TextStyle(
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF2E7D32)
+                color = GreenPrimary // Changed from Color(0xFF2E7D32)
             )
         )
 
@@ -94,7 +97,13 @@ fun ProfileScreen(
             placeholder = { Text("Loading current name...") },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
-            shape = RoundedCornerShape(12.dp)
+            shape = RoundedCornerShape(12.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = GreenPrimary,
+                unfocusedBorderColor = TextDark.copy(alpha = 0.3f),
+                focusedLabelColor = GreenPrimary,
+                cursorColor = GreenPrimary
+            )
         )
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -102,7 +111,7 @@ fun ProfileScreen(
         Button(
             modifier = Modifier.fillMaxWidth().height(50.dp),
             shape = RoundedCornerShape(12.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32)),
+            colors = ButtonDefaults.buttonColors(containerColor = GreenPrimary), // Changed from Color(0xFF2E7D32)
             onClick = {
                 if (newName.trim().isNotEmpty()) {
                     val uid = currentUser?.userId ?: ""
@@ -116,11 +125,11 @@ fun ProfileScreen(
                 }
             }
         ) {
-            Text("Update and Save", fontSize = 16.sp)
+            Text("Update and Save", fontSize = 16.sp, color = White) // Added white text color
         }
 
         TextButton(onClick = { onBack() }) {
-            Text("Cancel", color = Color.Gray)
+            Text("Cancel", color = TextDark) // Changed from Color.Gray
         }
     }
 }

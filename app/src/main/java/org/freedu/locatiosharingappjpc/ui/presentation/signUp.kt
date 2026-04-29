@@ -14,10 +14,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
@@ -29,7 +32,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -44,16 +46,20 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import org.freedu.locatiosharingappjpc.ui.theme.GreenError
+import org.freedu.locatiosharingappjpc.ui.theme.GreenPrimary
+import org.freedu.locatiosharingappjpc.ui.theme.TextDark
+import org.freedu.locatiosharingappjpc.ui.theme.White
 import org.freedu.locatiosharingappjpc.ui.viewModel.AuthViewModel
 
 @Preview(showSystemUi = true)
@@ -72,30 +78,32 @@ fun SignUpScreen(
     var confirmPasswordVisible by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(24.dp),
-
+            .systemBarsPadding()
+            .background(White)
+            .padding(horizontal = 16.dp)
+            .verticalScroll(rememberScrollState()), // Add scrolling for small screens
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        // Title with green color
+        Spacer(modifier = Modifier.weight(1f)) // Push content to center
+
         Text(
             text = "Create Account",
             fontSize = 32.sp,
             fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.primary, // GreenPrimary
+            color = GreenPrimary,
             modifier = Modifier.padding(bottom = 8.dp)
         )
 
         Text(
-            text = "Join us today!",
+            text = "Join the community!",
             fontSize = 16.sp,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(bottom = 32.dp)
+            color = TextDark,
+            modifier = Modifier.padding(bottom = 16.dp)
         )
 
         // Email OutlinedTextField
@@ -108,25 +116,22 @@ fun SignUpScreen(
             shape = RoundedCornerShape(12.dp),
             modifier = Modifier.fillMaxWidth(),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                focusedLabelColor = MaterialTheme.colorScheme.primary,
-                cursorColor = MaterialTheme.colorScheme.primary
+                focusedBorderColor = GreenPrimary,
+                unfocusedBorderColor = TextDark.copy(alpha = 0.3f),
+                focusedLabelColor = GreenPrimary,
+                cursorColor = GreenPrimary
             ),
             leadingIcon = {
                 Icon(
                     Icons.Default.Email,
                     contentDescription = "Email Icon",
-                    tint = MaterialTheme.colorScheme.primary
+                    tint = GreenPrimary
                 )
             },
-            isError = email.isNotEmpty() && !android.util.Patterns.EMAIL_ADDRESS.matcher(email)
-                .matches(),
+            isError = email.isNotEmpty() && !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches(),
             supportingText = {
-                if (email.isNotEmpty() && !android.util.Patterns.EMAIL_ADDRESS.matcher(email)
-                        .matches()
-                ) {
-                    Text("Invalid email address")
+                if (email.isNotEmpty() && !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                    Text("Invalid email address", color = GreenError)
                 }
             }
         )
@@ -143,26 +148,22 @@ fun SignUpScreen(
             shape = RoundedCornerShape(12.dp),
             modifier = Modifier.fillMaxWidth(),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                focusedLabelColor = MaterialTheme.colorScheme.primary,
-                cursorColor = MaterialTheme.colorScheme.primary
+                focusedBorderColor = GreenPrimary,
+                unfocusedBorderColor = TextDark.copy(alpha = 0.3f),
+                focusedLabelColor = GreenPrimary,
+                cursorColor = GreenPrimary
             ),
             visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             leadingIcon = {
-                Icon(
-                    Icons.Default.Lock,
-                    contentDescription = "Password Icon",
-                    tint = MaterialTheme.colorScheme.primary
-                )
+                Icon(Icons.Default.Lock, contentDescription = "Password Icon", tint = GreenPrimary)
             },
             trailingIcon = {
                 IconButton(onClick = { passwordVisible = !passwordVisible }) {
                     Icon(
                         if (passwordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
                         contentDescription = if (passwordVisible) "Hide password" else "Show password",
-                        tint = MaterialTheme.colorScheme.primary
+                        tint = GreenPrimary
                     )
                 }
             }
@@ -180,40 +181,36 @@ fun SignUpScreen(
             shape = RoundedCornerShape(12.dp),
             modifier = Modifier.fillMaxWidth(),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                focusedLabelColor = MaterialTheme.colorScheme.primary,
-                cursorColor = MaterialTheme.colorScheme.primary
+                focusedBorderColor = GreenPrimary,
+                unfocusedBorderColor = TextDark.copy(alpha = 0.3f),
+                focusedLabelColor = GreenPrimary,
+                cursorColor = GreenPrimary
             ),
             visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             leadingIcon = {
-                Icon(
-                    Icons.Default.Lock,
-                    contentDescription = "Confirm Password Icon",
-                    tint = MaterialTheme.colorScheme.primary
-                )
+                Icon(Icons.Default.Lock, contentDescription = "Confirm Password Icon", tint = GreenPrimary)
             },
             trailingIcon = {
                 IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
                     Icon(
                         if (confirmPasswordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
                         contentDescription = if (confirmPasswordVisible) "Hide password" else "Show password",
-                        tint = MaterialTheme.colorScheme.primary
+                        tint = GreenPrimary
                     )
                 }
             },
             isError = confirmPassword.isNotEmpty() && password != confirmPassword,
             supportingText = {
                 if (confirmPassword.isNotEmpty() && password != confirmPassword) {
-                    Text("Passwords do not match")
+                    Text("Passwords do not match", color = GreenError)
                 }
             }
         )
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Sign Up Button with green background
+        // Sign Up Button
         Button(
             onClick = {
                 if (validateInputs(email, password, confirmPassword, context)) {
@@ -227,14 +224,14 @@ fun SignUpScreen(
             shape = RoundedCornerShape(12.dp),
             enabled = !isLoading,
             colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.primary, // GreenPrimary
-                contentColor = MaterialTheme.colorScheme.onPrimary // White
+                containerColor = GreenPrimary,
+                contentColor = White
             )
         ) {
             if (isLoading) {
                 CircularProgressIndicator(
                     modifier = Modifier.size(24.dp),
-                    color = Color.White,
+                    color = White,
                     strokeWidth = 2.dp
                 )
             } else {
@@ -252,17 +249,17 @@ fun SignUpScreen(
             HorizontalDivider(
                 modifier = Modifier.weight(1f),
                 thickness = 1.dp,
-                color = MaterialTheme.colorScheme.outline
+                color = TextDark.copy(alpha = 0.3f)
             )
             Text(
                 text = " OR ",
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color = TextDark,
                 modifier = Modifier.padding(horizontal = 8.dp)
             )
             HorizontalDivider(
                 modifier = Modifier.weight(1f),
                 thickness = 1.dp,
-                color = MaterialTheme.colorScheme.outline
+                color = TextDark.copy(alpha = 0.3f)
             )
         }
 
@@ -275,30 +272,30 @@ fun SignUpScreen(
             },
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp),
-            colors = ButtonDefaults.outlinedButtonColors(
-                contentColor = MaterialTheme.colorScheme.primary
+            colors = ButtonDefaults.outlinedButtonColors(contentColor = GreenPrimary),
+            border = ButtonDefaults.outlinedButtonBorder.copy(
+                brush = androidx.compose.ui.graphics.SolidColor(GreenPrimary)
             )
         ) {
-            // Simple "G" in a circle instead of Google logo
-            Box(
-                modifier = Modifier
-                    .size(24.dp)
-                    .clip(CircleShape)
-                    .background(Color(0xFF4285F4)),
-                contentAlignment = Alignment.Center
+            Row(
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = "G",
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 14.sp
-                )
+                Box(
+                    modifier = Modifier
+                        .size(24.dp)
+                        .clip(CircleShape)
+                        .background(GreenPrimary),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(text = "G", color = White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                }
+                Spacer(modifier = Modifier.width(12.dp))
+                Text(text = "Sign in with Google", fontSize = 16.sp)
             }
-            Spacer(modifier = Modifier.width(12.dp))
-            Text("Sign in with Google", fontSize = 16.sp)
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         // Navigate to Sign In page text
         Row(
@@ -307,17 +304,18 @@ fun SignUpScreen(
         ) {
             Text(
                 text = "Already have an account? ",
-                color = Color.White,
-                fontSize = 14.sp,
-                modifier = Modifier.padding(end = 8.dp)
+                color = TextDark,
+                fontSize = 14.sp
             )
             Text(
                 text = "Sign In",
-                color = MaterialTheme.colorScheme.primary,
+                color = GreenPrimary,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.clickable { onNavigateToLogin() }
             )
         }
+
+        Spacer(modifier = Modifier.weight(1f)) // Push content to center
     }
 }
 
@@ -363,4 +361,3 @@ private fun validateInputs(
         else -> true
     }
 }
-
