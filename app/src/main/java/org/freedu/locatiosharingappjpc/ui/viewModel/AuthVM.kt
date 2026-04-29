@@ -2,7 +2,6 @@ package org.freedu.locatiosharingappjpc.ui.viewModel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -111,7 +110,7 @@ class AuthViewModel(
 }
 
 sealed class AuthState {
-    object Loading       : AuthState()
+    object Loading : AuthState()
     object Authenticated : AuthState()
     object Unauthenticated : AuthState()
 }

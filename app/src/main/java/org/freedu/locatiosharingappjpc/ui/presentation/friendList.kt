@@ -1,6 +1,7 @@
 package org.freedu.locatiosharingappjpc.ui.presentation
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -74,6 +75,7 @@ fun FriendListScreen(
         }
     }
 
+
     LaunchedEffect(Unit) {
         permissionLauncher.launch(
             arrayOf(
@@ -102,12 +104,19 @@ fun FriendListScreen(
                     title = "My Profile",
                     containerColor = Color(0xFF4CAF50),
                     onClick = {
-                        navController.navigate(
-                            Screen.MapSingle.createRoute(
-                                user.latitude ?: 0.0,
-                                user.longitude ?: 0.0
-                            )
-                        )
+                        val lat = user.latitude
+                        val lng = user.longitude
+
+                        // Check if location is actually valid
+                        if (lat != null && lng != null && lat != 0.0 && lng != 0.0) {
+                            navController.navigate(Screen.MapSingle.createRoute(lat, lng))
+                        } else {
+                            Toast.makeText(
+                                context,
+                                "Location not available for this user",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
                     }
                 )
             }
@@ -131,12 +140,15 @@ fun FriendListScreen(
                         containerColor = Color.White,
                         contentColor = Color.Black,
                         onClick = {
-                            // Move to MapSingle for this friend
-                            navController.navigate(
-                                Screen.MapSingle.createRoute(
-                                    friend.latitude ?: 0.0, friend.longitude ?: 0.0
-                                )
-                            )
+                            val lat = friend.latitude
+                            val lng = friend.longitude
+
+                            // Block navigation if location is N/A or 0.0
+                            if (lat != null && lng != null && lat != 0.0 && lng != 0.0) {
+                                navController.navigate(Screen.MapSingle.createRoute(lat, lng))
+                            } else {
+                                Toast.makeText(context, "Location not set for this user (N/A)", Toast.LENGTH_SHORT).show()
+                            }
                         }
                     )
                 }
@@ -151,7 +163,11 @@ fun FriendListScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             if (isMenuExpanded) {
-                SmallFloatingActionButton(onClick = {}, containerColor = Color(0xFF4CAF50)) {
+                // Inside FriendListScreen FAB Column
+                SmallFloatingActionButton(
+                    onClick = { navController.navigate(Screen.Profile.route) }, // Go to Profile
+                    containerColor = Color(0xFF4CAF50)
+                ) {
                     Icon(Icons.Default.Person, contentDescription = null, tint = Color.White)
                 }
                 SmallFloatingActionButton(
@@ -194,7 +210,9 @@ fun UserCard(
     onClick: () -> Unit
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
             .clickable { onClick() },
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = containerColor),
@@ -203,22 +221,28 @@ fun UserCard(
         Column(modifier = Modifier.padding(16.dp)) {
             if (title != null) {
                 Text(
-                    title,
-                    fontWeight = FontWeight.Bold,
+                    text = title,
+                    fontWeight = FontWeight.ExtraBold,
                     color = contentColor,
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                    modifier = Modifier.align(Alignment.CenterHorizontally).padding(bottom = 4.dp)
                 )
             }
-            Text(user.username, fontWeight = FontWeight.Bold, color = contentColor)
+            Text(user.username.ifEmpty { "Unknown User" }, fontWeight = FontWeight.Bold, color = contentColor)
             Text(user.email, fontSize = 12.sp, color = contentColor.copy(alpha = 0.8f))
+
             Row(
-                modifier = Modifier.padding(top = 8.dp).fillMaxWidth(),
+                modifier = Modifier.padding(top = 10.dp).fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                val lat = user.latitude?.let { String.format("%.4f", it) } ?: "N/A"
-                val lng = user.longitude?.let { String.format("%.4f", it) } ?: "N/A"
-                Text("Lat: $lat", fontSize = 13.sp, color = contentColor)
-                Text("Lng: $lng", fontSize = 13.sp, color = contentColor)
+                // Formatting logic: strictly N/A if null or 0.0
+                @SuppressLint("DefaultLocale")
+                fun formatLoc(value: Double?): String {
+                    return if (value == null || value == 0.0) "N/A"
+                    else String.format("%.4f", value)
+                }
+
+                Text("Lat: ${formatLoc(user.latitude)}", fontSize = 13.sp, color = contentColor)
+                Text("Lng: ${formatLoc(user.longitude)}", fontSize = 13.sp, color = contentColor)
             }
         }
     }

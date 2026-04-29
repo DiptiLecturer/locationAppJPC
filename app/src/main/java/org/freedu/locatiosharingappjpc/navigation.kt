@@ -17,6 +17,7 @@ import org.freedu.locatiosharingappjpc.repository.UserRepository
 import org.freedu.locatiosharingappjpc.ui.presentation.FriendListScreen
 import org.freedu.locatiosharingappjpc.ui.presentation.LoginScreen
 import org.freedu.locatiosharingappjpc.ui.presentation.MapScreen
+import org.freedu.locatiosharingappjpc.ui.presentation.ProfileScreen
 import org.freedu.locatiosharingappjpc.ui.presentation.SignUpScreen
 import org.freedu.locatiosharingappjpc.ui.presentation.SplashScreen
 import org.freedu.locatiosharingappjpc.ui.viewModel.AuthState
@@ -131,6 +132,22 @@ fun AppNavigation(
                 factory = FriendListViewModelFactory(UserRepository(), fusedLocationClient)
             )
             MapScreen(showAll = true, viewModel = viewModel)
+        }
+        // Inside NavHost
+        composable(Screen.Profile.route) {
+            // Reuse the same ViewModel instance or a new one
+            val viewModel: FriendListViewModel = viewModel(
+                factory = FriendListViewModelFactory(UserRepository(), fusedLocationClient)
+            )
+
+            ProfileScreen(
+                viewModel = viewModel,
+                onBack = {
+                    navController.navigate(Screen.FriendList.route) {
+                        popUpTo(Screen.FriendList.route) { inclusive = true }
+                    }
+                }
+            )
         }
     }
 }

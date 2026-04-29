@@ -146,19 +146,6 @@ class UserRepository {
         }
     }
 
-    // Add these to your UserRepository class
-    suspend fun updateUserName(uid: String, newName: String): Result<Unit> {
-        return try {
-            firestore.collection("AppUsers")
-                .document(uid)
-                .update("username", newName)
-                .await()
-            Result.success(Unit)
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
-    }
-
     suspend fun updateUserLocation(uid: String, lat: Double, lng: Double): Result<Unit> {
         return try {
             firestore.collection("AppUsers")
@@ -184,9 +171,23 @@ class UserRepository {
                     close(error)
                     return@addSnapshotListener
                 }
-                val users = snapshot?.documents?.mapNotNull { it.toObject(AppUsers::class.java) } ?: emptyList()
+                val users = snapshot?.documents?.mapNotNull { it.toObject(AppUsers::class.java) }
+                    ?: emptyList()
                 trySend(users)
             }
         awaitClose { subscription.remove() }
+    }
+
+    // In UserRepository.kt
+    suspend fun updateUserName(uid: String, newName: String): Result<Unit> {
+        return try {
+            firestore.collection("AppUsers")
+                .document(uid)
+                .update("username", newName)
+                .await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
 }

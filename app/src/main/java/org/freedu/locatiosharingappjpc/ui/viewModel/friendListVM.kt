@@ -1,7 +1,6 @@
 package org.freedu.locatiosharingappjpc.ui.viewModel
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.os.Looper
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -9,9 +8,7 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
-import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
-import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -57,7 +54,11 @@ class FriendListViewModel(
                 }
             }
         }
-        fusedLocationClient.requestLocationUpdates(request, locationCallback, Looper.getMainLooper())
+        fusedLocationClient.requestLocationUpdates(
+            request,
+            locationCallback,
+            Looper.getMainLooper()
+        )
     }
 
     private fun updateLocationInFirestore(lat: Double, lng: Double) {
@@ -69,5 +70,10 @@ class FriendListViewModel(
 
     fun logout() {
         repository.logout()
+    }
+    fun updateName(uid: String, name: String) {
+        viewModelScope.launch {
+            repository.updateUserName(uid, name)
+        }
     }
 }
